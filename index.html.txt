@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Online Satranç</title>
+    <link rel="stylesheet" href="https://unpkg.com">
+    <script src="https://jquery.com"></script>
+    <script src="https://unpkg.com"></script>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; background: #2c3e50; color: white; }
+        #board { width: 400px; margin-top: 20px; }
+        .status { margin-top: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>♟️ Online Satranç</h2>
+    <div id="board"></div>
+    <p class="status" id="status">Bağlantı bekleniyor...</p>
+
+    <script type="module">
+        import { initializeApp } from "https://gstatic.com";
+        import { getDatabase, ref, set, onValue } from "https://gstatic.com";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyAjhdRQzrc45Hnl7jdJfAJday9rJj6R5TM",
+          authDomain: "://firebaseapp.com",
+          projectId: "onlinechess-945fa",
+          storageBucket: "onlinechess-945fa.firebasestorage.app",
+          messagingSenderId: "700880711624",
+          appId: "1:700880711624:web:40086d52a20da15c921afd",
+          databaseURL: "https://onlinechess-945fa-default-rtdb.europe-west1.firebasedatabase.app"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const gameRef = ref(db, 'oyun/durum');
+
+        var board = Chessboard('board', {
+            draggable: true,
+            dropOffBoard: 'snapback',
+            position: 'start',
+            onDrop: function(source, target) {
+                // Hamle bitince Firebase'e konumu yaz
+                setTimeout(() => {
+                    set(gameRef, board.fen());
+                }, 250);
+            }
+        });
+
+        // Veritabanını dinle: Değişiklik olunca tahtayı oynat
+        onValue(gameRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                board.position(data);
+                document.getElementById('status').innerText = "Oyun Aktif - Hamle Yapıldı!";
+            } else {
+                document.getElementById('status').innerText = "Taşları oynatın!";
+            }
+        });
+    </script>
+</body>
+</html>
